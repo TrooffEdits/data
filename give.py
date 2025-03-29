@@ -1,31 +1,20 @@
 import requests
 import sys
 
-PASTEBINS = ["https://0x0.st", "https://clbin.com"]
+UPLOAD_URL = "https://ttm.sh"  # You can also use "https://transfer.sh"
 
 if len(sys.argv) != 2:
     print("Usage: python send_command.py <command>")
     sys.exit(1)
 
-command = sys.argv[1]
+command = sys.argv[1].encode()
+response = requests.post(UPLOAD_URL, files={"file": command})
 
-for pastebin in PASTEBINS:
-    try:
-        if pastebin == "https://0x0.st":
-            response = requests.post(pastebin, files={"f": command.encode()})
-        else:
-            response = requests.post(pastebin, data=command)
+if response.status_code == 200:
+    url = response.text.strip()
+    print(f"Command stored: {url}")
 
-        if response.status_code == 200:
-            url = response.text.strip()
-            print(f"Command sent! {url}")
-
-            # Save the URL for the laptop
-            with open("last_command_url.txt", "w") as file:
-                file.write(url)
-            break  # Stop if successful
-    except Exception as e:
-        print(f"Failed to send via {pastebin}, trying next...")
-
+    with open("last_command_url.txt", "w") as file:
+        file.write(url)
 else:
-    print("All pastebin services failed. Try again later.")
+    print("Failed to send command.")
