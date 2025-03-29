@@ -7,8 +7,8 @@ if len(sys.argv) != 2:
 
 command = sys.argv[1]
 
-# Send the command
-response = requests.post("http://ix.io", data={"f:1": command})
+# Try 0x0.st first
+response = requests.post("https://0x0.st", files={"f": command.encode()})
 
 if response.status_code == 200:
     url = response.text.strip()
@@ -18,4 +18,16 @@ if response.status_code == 200:
     with open("last_command_url.txt", "w") as file:
         file.write(url)
 else:
-    print("Failed to send command.")
+    print("Failed to send command, trying backup...")
+
+    # Try clbin.com as a backup
+    response = requests.post("https://clbin.com", data=command)
+
+    if response.status_code == 200:
+        url = response.text.strip()
+        print(f"Command sent via backup! {url}")
+
+        with open("last_command_url.txt", "w") as file:
+            file.write(url)
+    else:
+        print("Both services failed. Try again later.")
